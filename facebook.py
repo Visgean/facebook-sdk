@@ -239,7 +239,7 @@ class GraphAPI(object):
         content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
         return content_type, body
 
-    def request(self, path, args=None, post_args=None, raw_url = False):
+    def request(self, path, args=None, post_args=None, raw_url = False, timeout = 3):
         """Fetches the given path in the Graph API.
 
         We translate args to a valid query string. If post_args is given,
@@ -255,9 +255,9 @@ class GraphAPI(object):
         post_data = None if post_args is None else urllib.urlencode(post_args)
         try:
             if raw_url:
-                file = urllib2.urlopen(path)
+                file = urllib2.urlopen(path, timeout = timeout)
             else:
-                file = urllib2.urlopen("https://graph.facebook.com/" + path + "?" + urllib.urlencode(args), post_data)
+                file = urllib2.urlopen("https://graph.facebook.com/" + path + "?" + urllib.urlencode(args), post_data, timeout)
                 
         except urllib2.HTTPError, e:
             response = _parse_json(e.read())
@@ -315,7 +315,7 @@ class GraphAPI(object):
             raise GraphAPIError(response)
         return response
 
-    def fql(self, query, args=None, post_args=None):
+    def fql(self, query, args=None, post_args=None, timeout = 3):
         """FQL query.
         Two reasons to have this method:
         1. Graph api does not expose some info fields of a user, e.g.
@@ -347,7 +347,7 @@ class GraphAPI(object):
 
         file = urllib2.urlopen("https://api.facebook.com/method/" +
                                fql_method + "?" + urllib.urlencode(args),
-                               post_data)
+                               post_data, timeout)
         try:
             content = file.read()
             response = _parse_json(content)
